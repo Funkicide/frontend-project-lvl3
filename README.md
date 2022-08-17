@@ -5,6 +5,4 @@
 
 ### Link to app:
 
-``` sh
-https://frontend-project-lvl3-fu55dzwjs-funkicide.vercel.app/
-```
+<https://frontend-project-lvl3-fu55dzwjs-funkicide.vercel.app/>
