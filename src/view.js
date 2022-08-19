@@ -1,7 +1,14 @@
+/* eslint-disable no-param-reassign */
 import onChange from 'on-change';
 import * as yup from 'yup';
+import _ from 'lodash';
 
-export default ({ state, elements }) => {
+const renderErrors = ({ input, statusBar }, error) => {
+  input.classList.add('is-invalid');
+  statusBar.textContent = error;
+};
+
+export default ({ state, elements, i18nextInstance }) => {
   const watchedState = onChange(state, (path, value) => {
     console.log(path, value);
     if (path === 'rssForm.valid' && value) {
@@ -11,10 +18,8 @@ export default ({ state, elements }) => {
       elements.form.reset();
       elements.input.focus();
     }
-    if (path === 'rssForm.valid' && !value) {
-      elements.input.classList.add('is-invalid');
-      // console.log(state.rssForm.error)
-      elements.statusBar.textContent = state.rssForm.error;
+    if (path === 'rssForm.error') {
+      renderErrors(elements, i18nextInstance.t(state.rssForm.error));
     }
   });
 
@@ -24,17 +29,24 @@ export default ({ state, elements }) => {
     const url = formData.get('url').trim();
 
     // console.log(watchedState.feedList);
-    const schema = yup.string().url().required().notOneOf(watchedState.feedList, 'RSS уже существует');
+
+    yup.setLocale({
+      string: {
+        url: 'errors.url.invalid',
+      },
+    });
+
+    const schema = yup.string().url().notOneOf(watchedState.feedList, 'errors.url.notUnique');
     schema.validate(url)
       .then((validUrl) => {
         watchedState.feedList.push(validUrl);
         watchedState.rssForm.valid = true;
         // console.log(watchedState.feedList, validUrl);
       })
-      .catch(({ message }) => {
-        watchedState.rssForm.error = message;
+      .catch((error) => {
+        watchedState.rssForm.error = error.message;
         watchedState.rssForm.valid = false;
-        // console.log(watchedState.rssForm.error);
+        // console.log(error.errors);
       });
   });
 };
