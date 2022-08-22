@@ -9,20 +9,23 @@ export default () => {
     resources: {
       ru,
     },
-  })
-    .then(() => console.log('Initialized!!!'));
+  });
   const state = {
     rssForm: {
       processState: 'initial',
       error: '',
     },
-    feedList: [],
+    addedFeeds: [],
+    feeds: [],
+    posts: [],
   };
 
   const elements = {
     form: document.querySelector('.rss-form'),
     input: document.querySelector('[aria-label="url"]'),
     statusBar: document.querySelector('p.feedback'),
+    feeds: document.querySelector('div.feeds'),
+    posts: document.querySelector('div.posts'),
   };
 
   return { state, elements, i18nextInstance };
