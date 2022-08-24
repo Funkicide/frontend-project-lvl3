@@ -32,6 +32,55 @@ const renderErrors = ({ input, statusBar }, error) => {
   statusBar.textContent = error;
 };
 
+const normalizeRss = (state, rss) => {
+  const feedTitleElement = rss.querySelector('title');
+  const feedDescriptionElement = rss.querySelector('description');
+  const feedTitle = feedTitleElement.textContent;
+  const description = feedDescriptionElement.textContent;
+
+  const feed = {
+    id: _.uniqueId(),
+    title: feedTitle,
+    description,
+  };
+
+  if (_.isEmpty(state.feeds)) {
+    state.feeds.unshift(feed);
+  } else {
+    const hasCurrentFeed = state.feeds
+      .find((item) => item.title === feedTitle);
+    if (hasCurrentFeed === undefined) {
+      state.feeds.unshift(feed);
+    }
+  }
+
+  const currentFeed = state.feeds.find((item) => item.title === feedTitle);
+  const feedId = currentFeed.id;
+
+  const itemElements = rss.querySelectorAll('item');
+  const posts = [...itemElements].map((item) => {
+    const titleElement = item.querySelector('title');
+    const linkElement = item.querySelector('link');
+    const title = titleElement.textContent;
+    const link = linkElement.textContent;
+
+    return {
+      id: _.uniqueId(),
+      feedId,
+      title,
+      link,
+    };
+  });
+
+  const currentFeedPosts = state.posts.filter((post) => post.feedId === feedId);
+  const newPosts = _.uniqBy([...currentFeedPosts, ...posts], 'title');
+  const uniquePosts = _.uniqBy([..._.orderBy(newPosts, ['title'], ['desc']), ...state.posts], 'title');
+  const orderedPosts = _.orderBy(uniquePosts, ['feedId'], ['desc']);
+  state.posts = orderedPosts;
+
+  state.processState = 'loaded';
+};
+
 const renderRss = (elements, processState, { feeds, posts }) => {
   elements.input.classList.remove('is-invalid');
   elements.statusBar.classList.remove('text-danger');
@@ -78,6 +127,18 @@ const renderRss = (elements, processState, { feeds, posts }) => {
   elements.input.focus();
 };
 
+const autoupdate = (url, state, milliseconds = 5000) => {
+  setTimeout(() => {
+    state.processState = 'sending';
+    axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
+      .then(({ data }) => parseData(data.contents))
+      .then((parsedRss) => {
+        normalizeRss(state, parsedRss);
+      });
+    autoupdate(url, state, milliseconds);
+  }, milliseconds);
+};
+
 export default ({ state, elements, i18nextInstance }) => {
   const watchedState = onChange(state, (path, value) => {
     // console.log(path, value);
@@ -105,34 +166,13 @@ export default ({ state, elements, i18nextInstance }) => {
     });
 
     validateUrl(url, watchedState)
-      .then((validUrl) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${validUrl}`))
+      .then((validUrl) => {
+        autoupdate(validUrl, watchedState);
+        return axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(validUrl)}`);
+      })
       .then(({ data }) => parseData(data.contents))
       .then((parsedRss) => {
-        const feedTitleElement = parsedRss.querySelector('title');
-        const feedDescriptionElement = parsedRss.querySelector('description');
-
-        const feedId = _.uniqueId();
-        watchedState.feeds.unshift({
-          id: feedId,
-          title: feedTitleElement.textContent,
-          description: feedDescriptionElement.textContent,
-        });
-
-        const itemElements = parsedRss.querySelectorAll('item');
-        const posts = [...itemElements].map((post) => {
-          const titleElement = post.querySelector('title');
-          const linkElement = post.querySelector('link');
-
-          return {
-            id: _.uniqueId(),
-            feedId,
-            title: titleElement.textContent,
-            link: linkElement.textContent,
-          };
-        });
-        watchedState.posts = [...posts, ...state.posts];
-
-        watchedState.processState = 'loaded';
+        normalizeRss(watchedState, parsedRss);
       })
       .catch(({ message }) => {
         if (message === 'Network Error') {
