@@ -73,11 +73,9 @@ const normalizeRss = (state, rss) => {
   });
 
   const currentFeedPosts = state.posts.filter((post) => post.feedId === feedId);
-  const newPosts = _.uniqBy([...currentFeedPosts, ...posts], 'title');
-  const uniquePosts = _.uniqBy([..._.orderBy(newPosts, ['title'], ['desc']), ...state.posts], 'title');
-  const orderedPosts = _.orderBy(uniquePosts, ['feedId'], ['desc']);
-  state.posts = orderedPosts;
-
+  const newPosts = _.differenceBy(posts, currentFeedPosts, 'title');
+  console.log(newPosts);
+  state.posts = _.isEmpty(state.posts) ? posts : [...newPosts, ...state.posts];
   state.processState = 'loaded';
 };
 
@@ -134,6 +132,14 @@ const autoupdate = (url, state, milliseconds = 5000) => {
       .then(({ data }) => parseData(data.contents))
       .then((parsedRss) => {
         normalizeRss(state, parsedRss);
+      })
+      .catch(({ message }) => {
+        if (message === 'Network Error') {
+          state.processState = 'network error';
+          return;
+        }
+        state.rssForm.error = message;
+        state.processState = 'error';
       });
     autoupdate(url, state, milliseconds);
   }, milliseconds);
