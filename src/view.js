@@ -36,20 +36,20 @@ const normalizeRss = (state, rss) => {
   const feedTitleElement = rss.querySelector('title');
   const feedDescriptionElement = rss.querySelector('description');
   const feedTitle = feedTitleElement.textContent;
-  const description = feedDescriptionElement.textContent;
+  const feedDescription = feedDescriptionElement.textContent;
 
   const feed = {
     id: _.uniqueId(),
     title: feedTitle,
-    description,
+    description: feedDescription,
   };
 
   if (_.isEmpty(state.feeds)) {
     state.feeds.unshift(feed);
   } else {
-    const hasCurrentFeed = state.feeds
+    const currentFeed = state.feeds
       .find((item) => item.title === feedTitle);
-    if (hasCurrentFeed === undefined) {
+    if (!currentFeed) {
       state.feeds.unshift(feed);
     }
   }
@@ -61,32 +61,33 @@ const normalizeRss = (state, rss) => {
   const posts = [...itemElements].map((item) => {
     const titleElement = item.querySelector('title');
     const linkElement = item.querySelector('link');
+    const descriptionElement = item.querySelector('description');
     const title = titleElement.textContent;
     const link = linkElement.textContent;
+    const description = descriptionElement.textContent;
 
     return {
       id: _.uniqueId(),
       feedId,
       title,
       link,
+      description,
     };
   });
 
   const currentFeedPosts = state.posts.filter((post) => post.feedId === feedId);
   const newPosts = _.differenceBy(posts, currentFeedPosts, 'title');
-  console.log(newPosts);
+  // console.log(newPosts);
   state.posts = _.isEmpty(state.posts) ? posts : [...newPosts, ...state.posts];
-  state.processState = 'loaded';
 };
 
-const renderRss = (elements, processState, { feeds, posts }) => {
+const renderFeed = (elements, processState, { feeds }) => {
   elements.input.classList.remove('is-invalid');
   elements.statusBar.classList.remove('text-danger');
   elements.statusBar.classList.add('text-success');
   elements.statusBar.textContent = processState;
 
   elements.feeds.innerHTML = '';
-  elements.posts.innerHTML = '';
 
   const feedsList = document.createElement('ul');
   feedsList.classList.add('list-group');
@@ -106,6 +107,13 @@ const renderRss = (elements, processState, { feeds, posts }) => {
   feedsList.prepend(...feedsElements);
   elements.feeds.append(feedsList);
 
+  elements.form.reset();
+  elements.input.focus();
+};
+
+const renderPosts = (elements, { posts }) => {
+  elements.posts.innerHTML = '';
+
   const postsList = document.createElement('ul');
   postsList.classList.add('list-group');
   const postsElements = posts.map(({ title, link }) => {
@@ -120,36 +128,38 @@ const renderRss = (elements, processState, { feeds, posts }) => {
   });
   postsList.prepend(...postsElements);
   elements.posts.append(postsList);
-
-  elements.form.reset();
-  elements.input.focus();
 };
 
-const autoupdate = (url, state, milliseconds = 5000) => {
+const autoupdate = (url, watchedState, milliseconds = 5000) => {
   setTimeout(() => {
-    state.processState = 'sending';
+    watchedState.processState = 'sending';
     axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
       .then(({ data }) => parseData(data.contents))
       .then((parsedRss) => {
-        normalizeRss(state, parsedRss);
+        normalizeRss(watchedState, parsedRss);
+        watchedState.processState = 'updated';
       })
       .catch(({ message }) => {
         if (message === 'Network Error') {
-          state.processState = 'network error';
+          watchedState.processState = 'network error';
           return;
         }
-        state.rssForm.error = message;
-        state.processState = 'error';
+        watchedState.rssForm.error = message;
+        watchedState.processState = 'error';
       });
-    autoupdate(url, state, milliseconds);
+    autoupdate(url, watchedState, milliseconds);
   }, milliseconds);
 };
 
 export default ({ state, elements, i18nextInstance }) => {
   const watchedState = onChange(state, (path, value) => {
-    // console.log(path, value);
+    console.log(path, value);
     if (path === 'processState' && value === 'loaded') {
-      renderRss(elements, i18nextInstance.t('processState.loaded'), state);
+      renderFeed(elements, i18nextInstance.t('processState.loaded'), state);
+      renderPosts(elements, state);
+    }
+    if (path === 'processState' && value === 'updated') {
+      renderPosts(elements, state);
     }
     if (path === 'processState' && value === 'error') {
       renderErrors(elements, i18nextInstance.t(state.rssForm.error));
@@ -179,6 +189,7 @@ export default ({ state, elements, i18nextInstance }) => {
       .then(({ data }) => parseData(data.contents))
       .then((parsedRss) => {
         normalizeRss(watchedState, parsedRss);
+        watchedState.processState = 'loaded';
       })
       .catch(({ message }) => {
         if (message === 'Network Error') {
