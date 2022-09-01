@@ -77,7 +77,10 @@ const normalizeRss = (state, rss) => {
 
   const currentFeedPosts = state.posts.filter((post) => post.feedId === feedId);
   const newPosts = _.differenceBy(posts, currentFeedPosts, 'title');
-  // console.log(newPosts);
+  const newPostsUiState = newPosts.map(({ id }) => ({ id, status: 'unread' }));
+  state.uiState.posts = _.isEmpty(state.uiState.posts)
+    ? newPostsUiState
+    : [...newPostsUiState, ...state.uiState.posts];
   state.posts = _.isEmpty(state.posts) ? posts : [...newPosts, ...state.posts];
 };
 
@@ -111,23 +114,48 @@ const renderFeed = (elements, processState, { feeds }) => {
   elements.input.focus();
 };
 
-const renderPosts = (elements, { posts }) => {
-  elements.posts.innerHTML = '';
+const renderPosts = ({
+  posts, modalTitle, modalBody, modalLink,
+}, buttonText, state) => {
+  posts.innerHTML = '';
 
   const postsList = document.createElement('ul');
+  postsList.classList.add('border-0', 'rounded-0');
   postsList.classList.add('list-group');
-  const postsElements = posts.map(({ title, link }) => {
+  const postsElements = state.posts.map(({
+    title, link, id, description,
+  }) => {
     const li = document.createElement('li');
-    li.classList.add('list-group-item');
+    const currentPost = state.uiState.posts.find((post) => post.id === id);
+    const currentFontWeight = currentPost.status === 'read' ? 'fw-normal' : 'fw-bold';
+    li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0', currentFontWeight);
+
     const a = document.createElement('a');
     a.href = link;
     a.textContent = title;
-    li.appendChild(a);
+    a.dataset.id = id;
+
+    const button = document.createElement('button');
+    button.setAttribute('type', 'button');
+    button.dataset.bsToggle = 'modal';
+    button.dataset.bsTarget = '#modal';
+    button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+    button.textContent = buttonText;
+    button.dataset.id = id;
+    li.append(a, button);
+
+    button.addEventListener('click', () => {
+      modalTitle.textContent = title;
+      modalBody.textContent = description;
+      modalLink.href = link;
+      currentPost.status = 'read';
+      state.activePost = currentPost;
+    });
 
     return li;
   });
   postsList.prepend(...postsElements);
-  elements.posts.append(postsList);
+  posts.append(postsList);
 };
 
 const autoupdate = (url, watchedState, milliseconds = 5000) => {
@@ -153,13 +181,16 @@ const autoupdate = (url, watchedState, milliseconds = 5000) => {
 
 export default ({ state, elements, i18nextInstance }) => {
   const watchedState = onChange(state, (path, value) => {
-    console.log(path, value);
+    // console.log(path, value);
     if (path === 'processState' && value === 'loaded') {
       renderFeed(elements, i18nextInstance.t('processState.loaded'), state);
-      renderPosts(elements, state);
+      renderPosts(elements, i18nextInstance.t('button'), watchedState);
     }
     if (path === 'processState' && value === 'updated') {
-      renderPosts(elements, state);
+      renderPosts(elements, i18nextInstance.t('button'), watchedState);
+    }
+    if (path === 'activePost' && value.status === 'read') {
+      renderPosts(elements, i18nextInstance.t('button'), watchedState);
     }
     if (path === 'processState' && value === 'error') {
       renderErrors(elements, i18nextInstance.t(state.rssForm.error));

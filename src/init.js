@@ -18,6 +18,9 @@ export default () => {
     addedFeeds: [],
     feeds: [],
     posts: [],
+    uiState: {
+      posts: [],
+    },
   };
 
   const elements = {
@@ -26,6 +29,9 @@ export default () => {
     statusBar: document.querySelector('p.feedback'),
     feeds: document.querySelector('div.feeds'),
     posts: document.querySelector('div.posts'),
+    modalTitle: document.querySelector('.modal-title'),
+    modalBody: document.querySelector('.modal-body'),
+    modalLink: document.querySelector('.full-article'),
   };
 
   return { state, elements, i18nextInstance };
