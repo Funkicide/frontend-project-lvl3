@@ -181,7 +181,6 @@ const autoupdate = (url, watchedState, milliseconds = 5000) => {
 
 export default ({ state, elements, i18nextInstance }) => {
   const watchedState = onChange(state, (path, value) => {
-    // console.log(path, value);
     if (path === 'processState' && value === 'loaded') {
       renderFeed(elements, i18nextInstance.t('processState.loaded'), state);
       renderPosts(elements, i18nextInstance.t('button'), watchedState);
@@ -203,7 +202,7 @@ export default ({ state, elements, i18nextInstance }) => {
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    const url = formData.get('url').trim();
+    const url = formData.get('url');
     watchedState.processState = 'sending';
 
     yup.setLocale({

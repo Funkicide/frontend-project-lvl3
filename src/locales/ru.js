@@ -9,7 +9,7 @@ export default {
         invalid: 'Ссылка должна быть валидным URL',
         notUnique: 'RSS уже существует',
       },
-      network: 'Ошибка сети. Попробуйте еще раз.',
+      network: 'Ошибка сети',
     },
     button: 'Просмотр',
   },
