@@ -128,9 +128,10 @@ const renderPosts = ({
     const li = document.createElement('li');
     const currentPost = state.uiState.posts.find((post) => post.id === id);
     const currentFontWeight = currentPost.status === 'read' ? 'fw-normal' : 'fw-bold';
-    li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0', currentFontWeight);
+    li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
 
     const a = document.createElement('a');
+    a.classList.add(currentFontWeight);
     a.href = link;
     a.textContent = title;
     a.dataset.id = id;
