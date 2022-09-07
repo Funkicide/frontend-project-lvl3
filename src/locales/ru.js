@@ -1,6 +1,7 @@
 export default {
   translation: {
     processState: {
+      loading: 'Идёт загрузка',
       loaded: 'RSS успешно загружен',
     },
     errors: {

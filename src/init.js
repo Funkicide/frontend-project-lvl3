@@ -26,6 +26,7 @@ export default () => {
   const elements = {
     form: document.querySelector('.rss-form'),
     input: document.querySelector('[aria-label="url"]'),
+    submitButton: document.querySelector('[type=submit]'),
     statusBar: document.querySelector('p.feedback'),
     feeds: document.querySelector('div.feeds'),
     posts: document.querySelector('div.posts'),

@@ -24,6 +24,14 @@ const validateUrl = (url, state) => {
     });
 };
 
+const renderStatus = ({ input, statusBar }, status) => {
+  input.classList.remove('is-invalid');
+  statusBar.classList.remove('text-danger');
+  statusBar.classList.add('text-success');
+
+  statusBar.textContent = status;
+};
+
 const renderErrors = ({ input, statusBar }, error) => {
   statusBar.classList.remove('text-success');
   input.classList.add('is-invalid');
@@ -84,12 +92,7 @@ const normalizeRss = (state, rss) => {
   state.posts = _.isEmpty(state.posts) ? posts : [...newPosts, ...state.posts];
 };
 
-const renderFeed = (elements, processState, { feeds }) => {
-  elements.input.classList.remove('is-invalid');
-  elements.statusBar.classList.remove('text-danger');
-  elements.statusBar.classList.add('text-success');
-  elements.statusBar.textContent = processState;
-
+const renderFeed = (elements, { feeds }) => {
   elements.feeds.innerHTML = '';
 
   const feedsList = document.createElement('ul');
@@ -182,8 +185,16 @@ const autoupdate = (url, watchedState, milliseconds = 5000) => {
 
 export default ({ state, elements, i18nextInstance }) => {
   const watchedState = onChange(state, (path, value) => {
+    if (path === 'processState' && value === 'loading') {
+      elements.input.disabled = true;
+      elements.submitButton.disabled = true;
+      renderStatus(elements, i18nextInstance.t('processState.loading'));
+    }
     if (path === 'processState' && value === 'loaded') {
-      renderFeed(elements, i18nextInstance.t('processState.loaded'), state);
+      elements.input.disabled = false;
+      elements.submitButton.disabled = false;
+      renderStatus(elements, i18nextInstance.t('processState.loaded'));
+      renderFeed(elements, state);
       renderPosts(elements, i18nextInstance.t('button'), watchedState);
     }
     if (path === 'processState' && value === 'updated') {
@@ -193,9 +204,13 @@ export default ({ state, elements, i18nextInstance }) => {
       renderPosts(elements, i18nextInstance.t('button'), watchedState);
     }
     if (path === 'processState' && value === 'error') {
+      elements.input.disabled = false;
+      elements.submitButton.disabled = false;
       renderErrors(elements, i18nextInstance.t(state.rssForm.error));
     }
     if (path === 'processState' && value === 'network error') {
+      elements.input.disabled = false;
+      elements.submitButton.disabled = false;
       renderErrors(elements, i18nextInstance.t('errors.network'));
     }
   });
