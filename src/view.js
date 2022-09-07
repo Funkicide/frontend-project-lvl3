@@ -173,8 +173,8 @@ const autoupdate = (url, watchedState, milliseconds = 5000) => {
         }
         watchedState.rssForm.error = message;
         watchedState.processState = 'error';
-      });
-    autoupdate(url, watchedState, milliseconds);
+      })
+      .finally(() => autoupdate(url, watchedState, milliseconds));
   }, milliseconds);
 };
 
@@ -225,7 +225,8 @@ export default ({ state, elements, i18nextInstance }) => {
     validateUrl(url, watchedState)
       .then((validUrl) => {
         watchedState.data.currentUrl = validUrl;
-        return axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(validUrl)}`);
+        return axios
+          .get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(validUrl)}`, { timeout: 10000, timeoutErrorMessage: 'Network Error' });
       })
       .then(({ data }) => parseData(data.contents))
       .then((parsedRss) => {
