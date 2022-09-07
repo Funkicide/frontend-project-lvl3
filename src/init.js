@@ -15,6 +15,9 @@ export default () => {
       processState: 'initial',
       error: '',
     },
+    data: {
+      currentUrl: null,
+    },
     addedFeeds: [],
     feeds: [],
     posts: [],

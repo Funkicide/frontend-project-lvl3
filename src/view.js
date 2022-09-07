@@ -229,11 +229,12 @@ export default ({ state, elements, i18nextInstance }) => {
 
     validateUrl(url, watchedState)
       .then((validUrl) => {
-        autoupdate(validUrl, watchedState);
+        watchedState.data.currentUrl = validUrl;
         return axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(validUrl)}`);
       })
       .then(({ data }) => parseData(data.contents))
       .then((parsedRss) => {
+        autoupdate(watchedState.data.currentUrl, watchedState);
         normalizeRss(watchedState, parsedRss);
         watchedState.processState = 'loaded';
       })
