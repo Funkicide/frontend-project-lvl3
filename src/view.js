@@ -159,7 +159,7 @@ const renderPosts = ({
 
 const autoupdate = (url, watchedState, milliseconds = 5000) => {
   setTimeout(() => {
-    watchedState.processState = 'sending';
+    watchedState.processState = 'updating';
     axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
       .then(({ data }) => parseData(data.contents))
       .then((parsedRss) => {
@@ -214,7 +214,7 @@ export default ({ state, elements, i18nextInstance }) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const url = formData.get('url');
-    watchedState.processState = 'sending';
+    watchedState.processState = 'loading';
 
     yup.setLocale({
       string: {
