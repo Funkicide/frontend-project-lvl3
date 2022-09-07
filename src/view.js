@@ -14,14 +14,9 @@ const parseData = (data) => {
   return parsedRss;
 };
 
-const validateUrl = (url, state) => {
-  const schema = yup.string().url().notOneOf(state.addedFeeds, 'errors.url.notUnique');
-  return schema.validate(url)
-    .then((validUrl) => {
-      state.addedFeeds.push(validUrl);
-
-      return validUrl;
-    });
+const validateUrl = (url, { data: { activeFeeds } }) => {
+  const schema = yup.string().url().notOneOf(activeFeeds, 'errors.url.notUnique');
+  return schema.validate(url);
 };
 
 const renderStatus = ({ input, statusBar }, status) => {
@@ -52,17 +47,17 @@ const normalizeRss = (state, rss) => {
     description: feedDescription,
   };
 
-  if (_.isEmpty(state.feeds)) {
-    state.feeds.unshift(feed);
+  if (_.isEmpty(state.data.feeds)) {
+    state.data.feeds.unshift(feed);
   } else {
-    const currentFeed = state.feeds
+    const currentFeed = state.data.feeds
       .find((item) => item.title === feedTitle);
     if (!currentFeed) {
-      state.feeds.unshift(feed);
+      state.data.feeds.unshift(feed);
     }
   }
 
-  const currentFeed = state.feeds.find((item) => item.title === feedTitle);
+  const currentFeed = state.data.feeds.find((item) => item.title === feedTitle);
   const feedId = currentFeed.id;
 
   const itemElements = rss.querySelectorAll('item');
@@ -83,16 +78,16 @@ const normalizeRss = (state, rss) => {
     };
   });
 
-  const currentFeedPosts = state.posts.filter((post) => post.feedId === feedId);
+  const currentFeedPosts = state.data.posts.filter((post) => post.feedId === feedId);
   const newPosts = _.differenceBy(posts, currentFeedPosts, 'title');
   const newPostsUiState = newPosts.map(({ id }) => ({ id, status: 'unread' }));
   state.uiState.posts = _.isEmpty(state.uiState.posts)
     ? newPostsUiState
     : [...newPostsUiState, ...state.uiState.posts];
-  state.posts = _.isEmpty(state.posts) ? posts : [...newPosts, ...state.posts];
+  state.data.posts = _.isEmpty(state.data.posts) ? posts : [...newPosts, ...state.data.posts];
 };
 
-const renderFeed = (elements, { feeds }) => {
+const renderFeed = (elements, { data: { feeds } }) => {
   elements.feeds.innerHTML = '';
 
   const feedsList = document.createElement('ul');
@@ -125,7 +120,7 @@ const renderPosts = ({
   const postsList = document.createElement('ul');
   postsList.classList.add('border-0', 'rounded-0');
   postsList.classList.add('list-group');
-  const postsElements = state.posts.map(({
+  const postsElements = state.data.posts.map(({
     title, link, id, description,
   }) => {
     const li = document.createElement('li');
@@ -234,6 +229,7 @@ export default ({ state, elements, i18nextInstance }) => {
       })
       .then(({ data }) => parseData(data.contents))
       .then((parsedRss) => {
+        state.data.activeFeeds.push(watchedState.data.currentUrl);
         autoupdate(watchedState.data.currentUrl, watchedState);
         normalizeRss(watchedState, parsedRss);
         watchedState.processState = 'loaded';

@@ -17,10 +17,10 @@ export default () => {
     },
     data: {
       currentUrl: null,
+      activeFeeds: [],
+      feeds: [],
+      posts: [],
     },
-    addedFeeds: [],
-    feeds: [],
-    posts: [],
     uiState: {
       posts: [],
     },
