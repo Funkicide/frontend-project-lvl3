@@ -12,6 +12,8 @@ export default {
       },
       network: 'Ошибка сети',
     },
-    button: 'Просмотр',
+    postPreviewButton: 'Просмотр',
+    feedsHeader: 'Фиды',
+    postsHeader: 'Посты',
   },
 };

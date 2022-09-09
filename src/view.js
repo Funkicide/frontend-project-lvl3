@@ -87,26 +87,40 @@ const normalizeRss = (state, rss) => {
   state.data.posts = _.isEmpty(state.data.posts) ? posts : [...newPosts, ...state.data.posts];
 };
 
-const renderFeed = (elements, { data: { feeds } }) => {
+const renderFeed = (elements, headerText, { data: { feeds } }) => {
   elements.feeds.innerHTML = '';
 
+  const feedsContainer = document.createElement('div');
+  feedsContainer.classList.add('card', 'border-0');
+
+  const feedsHeaderContainer = document.createElement('div');
+  feedsHeaderContainer.classList.add('card-body');
+  const feedsHeader = document.createElement('h2');
+  feedsHeader.classList.add('card-title', 'h4');
+  feedsHeader.textContent = headerText;
+  feedsHeaderContainer.prepend(feedsHeader);
+
   const feedsList = document.createElement('ul');
-  feedsList.classList.add('list-group');
+  feedsList.classList.add('list-group', 'border-0', 'rounded-0');
   const feedsElements = feeds.map(({ title, description }) => {
     const li = document.createElement('li');
-    li.classList.add('list-group-item');
+    li.classList.add('list-group-item', 'border-0', 'border-end-0');
     const header = document.createElement('h3');
+    header.classList.add('h6', 'm-0');
     header.textContent = title;
 
     const descBox = document.createElement('p');
+    descBox.classList.add('m-0', 'small', 'text-black-50');
     descBox.textContent = description;
 
     li.prepend(header, descBox);
 
     return li;
   });
+
   feedsList.prepend(...feedsElements);
-  elements.feeds.append(feedsList);
+  feedsContainer.append(feedsHeaderContainer, feedsList);
+  elements.feeds.append(feedsContainer);
 
   elements.form.reset();
   elements.input.focus();
@@ -114,8 +128,18 @@ const renderFeed = (elements, { data: { feeds } }) => {
 
 const renderPosts = ({
   posts, modalTitle, modalBody, modalLink,
-}, buttonText, state) => {
+}, buttonText, headerText, state) => {
   posts.innerHTML = '';
+
+  const postsContainer = document.createElement('div');
+  postsContainer.classList.add('card', 'border-0');
+
+  const postsHeaderContainer = document.createElement('div');
+  postsHeaderContainer.classList.add('card-body');
+  const postsHeader = document.createElement('h2');
+  postsHeader.classList.add('card-title', 'h4');
+  postsHeader.textContent = headerText;
+  postsHeaderContainer.prepend(postsHeader);
 
   const postsList = document.createElement('ul');
   postsList.classList.add('border-0', 'rounded-0');
@@ -153,8 +177,10 @@ const renderPosts = ({
 
     return li;
   });
+
   postsList.prepend(...postsElements);
-  posts.append(postsList);
+  postsContainer.append(postsHeaderContainer, postsList);
+  posts.append(postsContainer);
 };
 
 const autoupdate = (url, watchedState, milliseconds = 5000) => {
@@ -189,14 +215,14 @@ export default ({ state, elements, i18nextInstance }) => {
       elements.input.disabled = false;
       elements.submitButton.disabled = false;
       renderStatus(elements, i18nextInstance.t('processState.loaded'));
-      renderFeed(elements, state);
-      renderPosts(elements, i18nextInstance.t('button'), watchedState);
+      renderFeed(elements, i18nextInstance.t('feedsHeader'), state);
+      renderPosts(elements, i18nextInstance.t('postPreviewButton'), i18nextInstance.t('postsHeader'), watchedState);
     }
     if (path === 'processState' && value === 'updated') {
-      renderPosts(elements, i18nextInstance.t('button'), watchedState);
+      renderPosts(elements, i18nextInstance.t('postPreviewButton'), i18nextInstance.t('postsHeader'), watchedState);
     }
     if (path === 'activePost' && value.status === 'read') {
-      renderPosts(elements, i18nextInstance.t('button'), watchedState);
+      renderPosts(elements, i18nextInstance.t('postPreviewButton'), i18nextInstance.t('postsHeader'), watchedState);
     }
     if (path === 'processState' && value === 'error') {
       elements.input.disabled = false;
