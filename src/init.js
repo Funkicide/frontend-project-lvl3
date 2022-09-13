@@ -1,5 +1,8 @@
 import i18next from 'i18next';
 import ru from './locales/ru.js';
+import watchState from './view.js';
+import { formSubmitHandler, previewButtonHandler } from './controller/eventHandlers.js';
+import autoupdate from './controller/autoupdate.js';
 
 export default () => {
   const i18nextInstance = i18next.createInstance();
@@ -33,10 +36,15 @@ export default () => {
     statusBar: document.querySelector('p.feedback'),
     feeds: document.querySelector('div.feeds'),
     posts: document.querySelector('div.posts'),
-    modalTitle: document.querySelector('.modal-title'),
-    modalBody: document.querySelector('.modal-body'),
-    modalLink: document.querySelector('.full-article'),
+    modal: {
+      title: document.querySelector('.modal-title'),
+      body: document.querySelector('.modal-body'),
+      link: document.querySelector('.full-article'),
+    },
   };
+  const watchedState = watchState({ state, elements, i18nextInstance });
 
-  return { state, elements, i18nextInstance };
+  elements.form.addEventListener('submit', formSubmitHandler(watchedState));
+  elements.posts.addEventListener('click', previewButtonHandler(elements, watchedState));
+  autoupdate(watchedState);
 };
