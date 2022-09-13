@@ -13,7 +13,7 @@ const formSubmitHandler = (watchedState) => (e) => {
   validateUrl(url, watchedState)
     .then((validUrl) => {
       watchedState.data.currentUrl = validUrl;
-      return axios.get(makeProxyUrl(validUrl), { timeout: 30000, timeoutErrorMessage: 'Network Error' });
+      return axios.get(makeProxyUrl(validUrl), { timeout: 30000 });
     })
     .then(({ data }) => parseData(data.contents))
     .then((parsedRss) => {
@@ -21,13 +21,9 @@ const formSubmitHandler = (watchedState) => (e) => {
       normalizeRss(watchedState, parsedRss);
       watchedState.processState = 'loaded';
     })
-    .catch(({ message }) => {
-      if (message === 'Network Error') {
-        watchedState.processState = 'network error';
-        return;
-      }
-      watchedState.rssForm.error = message;
-      watchedState.processState = 'error';
+    .catch((error) => {
+      watchedState.rssForm.error = error.isAxiosError ? 'errors.network' : error.message;
+      watchedState.processState = 'failed';
     });
 };
 

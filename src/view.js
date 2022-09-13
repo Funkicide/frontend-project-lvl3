@@ -124,15 +124,10 @@ export default ({ state, elements, i18nextInstance }) => {
     if (path === 'activePost' && value.status === 'read') {
       renderPosts(elements, i18nextInstance.t('postPreviewButton'), i18nextInstance.t('postsHeader'), watchedState);
     }
-    if (path === 'processState' && value === 'error') {
+    if (path === 'processState' && value === 'failed') {
       elements.input.disabled = false;
       elements.submitButton.disabled = false;
       renderErrors(elements, i18nextInstance.t(state.rssForm.error));
-    }
-    if (path === 'processState' && value === 'network error') {
-      elements.input.disabled = false;
-      elements.submitButton.disabled = false;
-      renderErrors(elements, i18nextInstance.t('errors.network'));
     }
   });
 
