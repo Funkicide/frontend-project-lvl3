@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "",
   "main": "index.js",
-  "type": "module",
+
   "scripts": {
     "test": "jest",
     "build": "webpack --mode=production --node-env=production",
