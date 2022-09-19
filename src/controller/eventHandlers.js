@@ -2,7 +2,7 @@ import axios from 'axios';
 import makeProxyUrl from './makeProxyUrl.js';
 import parseData from './parseData.js';
 import validateUrl from './validateUrl.js';
-import normalizeRss from './normalizeRss.js';
+import addIds from './addIds.js';
 
 const formSubmitHandler = (watchedState) => (e) => {
   e.preventDefault();
@@ -18,7 +18,7 @@ const formSubmitHandler = (watchedState) => (e) => {
     .then(({ data }) => parseData(data.contents))
     .then((parsedRss) => {
       watchedState.data.activeFeeds.push(watchedState.data.currentUrl);
-      normalizeRss(watchedState, parsedRss);
+      addIds(watchedState, parsedRss);
       watchedState.processState = 'loaded';
     })
     .catch((error) => {
