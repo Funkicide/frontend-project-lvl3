@@ -6,6 +6,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const isProduction = process.env.NODE_ENV === 'production';
 
 const config = {
+  devtool: 'source-map',
   entry: './src/index.js',
   output: {
     filename: 'index_bundle.js',
