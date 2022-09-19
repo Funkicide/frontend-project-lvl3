@@ -31,7 +31,7 @@ const previewButtonHandler = ({ modal }, state) => ({ target }) => {
   const { id } = target.dataset;
   const { tagName } = target;
 
-  if (tagName === 'LI') {
+  if (!id) {
     return;
   }
 
