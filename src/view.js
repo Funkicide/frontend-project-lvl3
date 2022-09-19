@@ -1,23 +1,23 @@
 /* eslint-disable no-param-reassign */
 import onChange from 'on-change';
 
-const renderStatus = ({ input, statusBar }, status) => {
+const renderStatus = ({ input, statusBar }, status, i18nextInstance) => {
   input.classList.remove('is-invalid');
   statusBar.classList.remove('text-danger');
   statusBar.classList.add('text-success');
 
-  statusBar.textContent = status;
+  statusBar.textContent = i18nextInstance.t(`processState.${status}`);
 };
 
-const renderErrors = ({ input, statusBar }, error) => {
+const renderErrors = ({ input, statusBar }, error, i18nextInstance) => {
   statusBar.classList.remove('text-success');
   input.classList.add('is-invalid');
   statusBar.classList.add('text-danger');
 
-  statusBar.textContent = error;
+  statusBar.textContent = i18nextInstance.t(error);
 };
 
-const renderFeed = (elements, headerText, { data: { feeds } }) => {
+const renderFeed = (elements, i18nextInstance, { data: { feeds } }) => {
   elements.feeds.innerHTML = '';
 
   const feedsContainer = document.createElement('div');
@@ -27,7 +27,7 @@ const renderFeed = (elements, headerText, { data: { feeds } }) => {
   feedsHeaderContainer.classList.add('card-body');
   const feedsHeader = document.createElement('h2');
   feedsHeader.classList.add('card-title', 'h4');
-  feedsHeader.textContent = headerText;
+  feedsHeader.textContent = i18nextInstance.t('feedsHeader');
   feedsHeaderContainer.prepend(feedsHeader);
 
   const feedsList = document.createElement('ul');
@@ -56,7 +56,7 @@ const renderFeed = (elements, headerText, { data: { feeds } }) => {
   elements.input.focus();
 };
 
-const renderPosts = ({ posts }, buttonText, headerText, state) => {
+const renderPosts = ({ posts }, i18nextInstance, state) => {
   posts.innerHTML = '';
 
   const postsContainer = document.createElement('div');
@@ -66,7 +66,7 @@ const renderPosts = ({ posts }, buttonText, headerText, state) => {
   postsHeaderContainer.classList.add('card-body');
   const postsHeader = document.createElement('h2');
   postsHeader.classList.add('card-title', 'h4');
-  postsHeader.textContent = headerText;
+  postsHeader.textContent = i18nextInstance.t('postsHeader');
   postsHeaderContainer.prepend(postsHeader);
 
   const postsList = document.createElement('ul');
@@ -92,7 +92,7 @@ const renderPosts = ({ posts }, buttonText, headerText, state) => {
     button.dataset.bsToggle = 'modal';
     button.dataset.bsTarget = '#modal';
     button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
-    button.textContent = buttonText;
+    button.textContent = i18nextInstance.t('postPreviewButton');
     button.dataset.id = id;
     li.append(a, button);
 
@@ -109,25 +109,27 @@ export default ({ state, elements, i18nextInstance }) => {
     if (path === 'processState' && value === 'loading') {
       elements.input.disabled = true;
       elements.submitButton.disabled = true;
-      renderStatus(elements, i18nextInstance.t('processState.loading'));
+      renderStatus(elements, value, i18nextInstance);
     }
     if (path === 'processState' && value === 'loaded') {
       elements.input.disabled = false;
       elements.submitButton.disabled = false;
-      renderStatus(elements, i18nextInstance.t('processState.loaded'));
-      renderFeed(elements, i18nextInstance.t('feedsHeader'), state);
-      renderPosts(elements, i18nextInstance.t('postPreviewButton'), i18nextInstance.t('postsHeader'), watchedState);
+      renderStatus(elements, value, i18nextInstance);
+      renderFeed(elements, i18nextInstance, state);
+      renderPosts(elements, i18nextInstance, watchedState);
     }
     if (path === 'processState' && value === 'updated') {
-      renderPosts(elements, i18nextInstance.t('postPreviewButton'), i18nextInstance.t('postsHeader'), watchedState);
+      renderPosts(elements, i18nextInstance, watchedState);
     }
     if (path === 'activePost' && value.status === 'read') {
-      renderPosts(elements, i18nextInstance.t('postPreviewButton'), i18nextInstance.t('postsHeader'), watchedState);
+      renderPosts(elements, i18nextInstance, watchedState);
+    }
+    if (path === 'rssForm.error') {
+      renderErrors(elements, value, i18nextInstance);
     }
     if (path === 'processState' && value === 'failed') {
       elements.input.disabled = false;
       elements.submitButton.disabled = false;
-      renderErrors(elements, i18nextInstance.t(state.rssForm.error));
     }
   });
 
