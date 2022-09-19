@@ -1,4 +1,4 @@
-export default (data) => {
+const parseData = (data) => {
   const parser = new DOMParser();
   const parsedRss = parser.parseFromString(data, 'text/xml');
   const parserError = parsedRss.querySelector('parsererror');
@@ -35,3 +35,5 @@ export default (data) => {
 
   return { feed, posts };
 };
+
+export default parseData;
