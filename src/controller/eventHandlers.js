@@ -45,18 +45,20 @@ const previewButtonHandler = ({ modal }, state) => ({ target }) => {
     return;
   }
 
-  const { title, description, link } = state.data.posts.find((post) => post.id === id);
-  const currentPostUiState = state.uiState.posts.find((post) => post.id === id);
+  const {
+    title,
+    description,
+    link,
+    id: postId,
+  } = state.data.posts.find((post) => post.id === id);
 
   if (tagName === 'A') {
-    currentPostUiState.status = 'read';
-    state.activePost = currentPostUiState;
+    state.uiState.posts.add(postId);
   } else if (tagName === 'BUTTON') {
     modal.title.textContent = title;
     modal.body.textContent = description;
     modal.link.href = link;
-    currentPostUiState.status = 'read';
-    state.activePost = currentPostUiState;
+    state.uiState.posts.add(postId);
   }
 };
 

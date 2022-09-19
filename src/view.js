@@ -76,8 +76,8 @@ const renderPosts = ({ posts }, i18nextInstance, state) => {
     title, link, id,
   }) => {
     const li = document.createElement('li');
-    const currentPost = state.uiState.posts.find((post) => post.id === id);
-    const currentFontWeight = currentPost.status === 'read' ? 'fw-normal' : 'fw-bold';
+    // const currentPost = state.uiState.posts.find((post) => post.id === id);
+    const currentFontWeight = state.uiState.posts.has(id) ? 'fw-normal' : 'fw-bold';
     li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
 
     const a = document.createElement('a');
@@ -121,7 +121,7 @@ export default ({ state, elements, i18nextInstance }) => {
     if (path === 'processState' && value === 'updated') {
       renderPosts(elements, i18nextInstance, watchedState);
     }
-    if (path === 'activePost' && value.status === 'read') {
+    if (path === 'uiState.posts') {
       renderPosts(elements, i18nextInstance, watchedState);
     }
     if (path === 'rssForm.error') {

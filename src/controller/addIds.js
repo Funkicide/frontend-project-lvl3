@@ -17,10 +17,6 @@ const addIds = (state, { feed, posts }) => {
 
   const currentFeedPosts = state.data.posts.filter((post) => post.feedId === feedId);
   const newPosts = differenceBy(postsWithIds, currentFeedPosts, 'title');
-  const newPostsUiState = newPosts.map(({ id }) => ({ id, status: 'unread' }));
-  state.uiState.posts = isEmpty(state.uiState.posts)
-    ? newPostsUiState
-    : [...newPostsUiState, ...state.uiState.posts];
   state.data.posts = isEmpty(state.data.posts) ? postsWithIds : [...newPosts, ...state.data.posts];
 };
 

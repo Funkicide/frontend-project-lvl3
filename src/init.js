@@ -25,7 +25,7 @@ export default () => {
       posts: [],
     },
     uiState: {
-      posts: [],
+      posts: new Set(),
     },
   };
 
