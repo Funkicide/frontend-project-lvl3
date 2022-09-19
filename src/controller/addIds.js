@@ -1,8 +1,8 @@
 import { isEmpty, differenceBy, uniqueId } from 'lodash';
 
-export default (state, { feed, posts }) => {
+const addIds = (state, { feed, posts }) => {
   if (isEmpty(state.data.feeds)) {
-    state.data.feeds.unshift({ ...feed, id: uniqueId() });
+    state.data.feeds.push({ ...feed, id: uniqueId() });
   } else {
     const currentFeed = state.data.feeds
       .find((item) => item.title === feed.title);
@@ -23,3 +23,5 @@ export default (state, { feed, posts }) => {
     : [...newPostsUiState, ...state.uiState.posts];
   state.data.posts = isEmpty(state.data.posts) ? postsWithIds : [...newPosts, ...state.data.posts];
 };
+
+export default addIds;
