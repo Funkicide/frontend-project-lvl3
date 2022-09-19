@@ -1,8 +1,18 @@
 import axios from 'axios';
+import * as yup from 'yup';
 import makeProxyUrl from './makeProxyUrl.js';
 import parseData from './parseData.js';
-import validateUrl from './validateUrl.js';
 import addIds from './addIds.js';
+
+const validateUrl = (url, { data: { activeFeeds } }) => {
+  yup.setLocale({
+    string: {
+      url: 'errors.url.invalid',
+    },
+  });
+  const schema = yup.string().url().notOneOf(activeFeeds, 'errors.url.notUnique');
+  return schema.validate(url);
+};
 
 const formSubmitHandler = (watchedState) => (e) => {
   e.preventDefault();
